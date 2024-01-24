@@ -128,51 +128,16 @@ Annotator.prototype = {
         var mainUpdate = function(annotationSolutions) {
 
             // Update the different tags the user can use to annotate, also update the solutions to the
-            // annotation task if the user is suppose to recieve feedback
-            var proximityTags = my.currentTask.proximityTag;
-            var annotationTags = my.currentTask.annotationTag;
-            var tutorialVideoURL = my.currentTask.tutorialVideoURL;
+            var annotationGroup = my.currentTask.annotationGroup;
+            var annotationTags = annotationGroup[0].label;
+            // var tutorialVideoURL = my.currentTask.tutorialVideoURL;
             var alwaysShowTags = my.currentTask.alwaysShowTags;
-            var instructions = my.currentTask.instructions;
+            // var instructions = my.currentTask.instructions;
             my.stages.reset(
-                proximityTags,
                 annotationTags,
                 annotationSolutions,
                 alwaysShowTags
             );
-
-            // set video url
-            $('#tutorial-video').attr('src', tutorialVideoURL);
-
-            // add instructions
-            var instructionsContainer = $('#instructions-container');
-            instructionsContainer.empty();
-            if (typeof instructions !== "undefined"){
-                $('.modal-trigger').leanModal();
-                instructions.forEach(function (instruction, index) {
-                    if (index==0) {
-                        // first instruction is the header
-                        var instr = $('<h4>', {
-                            html: instruction
-                        });
-                    } else {
-                        var instr = $('<h6>', {
-                            "class": "instruction",
-                            html: instruction
-                        });                    
-                    }
-                    instructionsContainer.append(instr);
-                });
-                if (!my.instructionsViewed) {
-                    $('#instructions-modal').openModal();
-                    my.instructionsViewed = true;
-                }
-            }
-            else
-            {
-                $('#instructions-container').hide();
-                $('#trigger').hide();
-            }
 
             // Update the visualization type and the feedback type and load in the new audio clip
             my.wavesurfer.params.visualization = my.currentTask.visualization; // invisible, spectrogram, waveform

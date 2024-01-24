@@ -87,11 +87,6 @@ StageTwoView.prototype = {
 function StageThreeView() {
     this.dom = null;
     this.editOptionsDom = null;
-    // Note that this assumes there are never more than 3 proximity labels
-    this.colors = ['#870f4f', '#000080', '#6a1b9a'];
-    this.colors.forEach(function (color, index) {
-        $('<style>.proximity1_tag:hover,.proximity' + index + '_tag.selected{background-color: ' + color + '}</style>').appendTo('head');
-    });
 }
 
 StageThreeView.prototype = {
@@ -120,47 +115,11 @@ StageThreeView.prototype = {
         this.dom = container.append([message, time, tagContainer]);
     },
 
-    // Replace the proximity and annotation elements with the new elements that contain the
-    // tags in the proximityTags and annotationTags lists
-    updateTagContents: function(proximityTags, annotationTags) {
+    // Replace the annotation elements with the new elements that contain the
+    updateTagContents: function(annotationTags) {
         $('.tag_container', this.dom).empty();
-        var proximity = this.createProximityTags(proximityTags);
         var annotation = this.createAnnotationTags(annotationTags);
-        $('.tag_container', this.dom).append([annotation, proximity]);
-    },
-
-    // Create proximity tag elements
-    createProximityTags: function(proximityTags) {
-        if (proximityTags.length === 0) { return; }
-        var my = this;
-
-        var proximity = $('<div>');
-        var proximityLabel = $('<div>', {
-            class: 'stage_3_label',
-            text: 'The sound is:',
-        });
-
-        var proximityContainer = $('<div>', {
-            class: 'proximity_tags'
-        });
-
-        proximityTags.forEach(function (tagName, index) {
-            var tag = $('<button>', {
-                class: 'proximity_tag btn proximity' + index + '_tag' + ' disabled',
-                text: tagName,
-            });
-            // When a proximity tag is clicked fire the 'change-tag' event with what proximity it is and
-            // colour that proximity is associated with
-            tag.click(function () {
-                $(my).trigger(
-                    'change-tag', 
-                    [{proximity: tagName, color: my.colors[index]}]
-                );
-            });
-            proximityContainer.append(tag);
-        });
-
-        return proximity.append([proximityLabel, proximityContainer]);
+        $('.tag_container', this.dom).append([annotation]);
     },
 
     // Create annotation tag elements
@@ -206,14 +165,12 @@ StageThreeView.prototype = {
         $('.duration', this.dom).val(Util.secondsToString(region.end - region.start));
     },
 
-    // Update the elements of the proximity and annotation tags to highlight
-    // which tags match the selected region's current annotation and proximity
+    // Update the elements of the annotation tags to highlight
+    // which tags match the selected region's current annotation
     updateSelectedTags: function(region) {
         $('.annotation_tag', this.dom).removeClass('selected');
-        $('.proximity_tag', this.dom).removeClass('selected');
         $('.custom_tag input', this.dom).val('');
         $('.annotation_tag', this.dom).removeClass('disabled');
-        $('.proximity_tag', this.dom).removeClass('disabled');
 
         if (region.annotation) {
             var selectedTags = $('.annotation_tag', this.dom).filter(function () {
@@ -224,13 +181,6 @@ StageThreeView.prototype = {
             } else {
                 $('.custom_tag input', this.dom).val(region.annotation); 
             }
-        }
-
-        if (region.proximity) {
-            var selectedTags = $('.proximity_tag', this.dom).filter(function () {
-                return this.innerHTML === region.proximity;
-            });
-            selectedTags.addClass('selected');
         }
     }
 };
@@ -244,7 +194,6 @@ StageThreeView.prototype = {
 function AnnotationStages(wavesurfer, hiddenImage) {
     this.currentStage = 0;
     this.currentRegion = null;
-    this.usingProximity = false;
     this.stageOneView = new StageOneView();
     this.stageTwoView = new StageTwoView();
     this.stageThreeView = new StageThreeView();
@@ -288,9 +237,6 @@ AnnotationStages.prototype = {
             'end': region.end,
             'annotation': region.annotation
         };
-        if (this.usingProximity) {
-            regionData.proximity = region.proximity;
-        }
         return regionData;
     },
 
@@ -321,12 +267,8 @@ AnnotationStages.prototype = {
         if (this.wavesurfer.regions) {
             for (var region_id in this.wavesurfer.regions.list) {
                 var region = this.wavesurfer.regions.list[region_id];
-                if (region.annotation === '' || (this.usingProximity && region.proximity === '')) {
-                    if (this.usingProximity) {
-                        Message.notifyAlert('Make sure all your annotations have an annotation tag and a proximity tag!'); 
-                    } else {
-                        Message.notifyAlert('Make sure all your annotations have a tag!'); 
-                    }
+                if (region.annotation === '') {
+                    Message.notifyAlert('Make sure all your annotations have a tag!'); 
                     return false;
                 }
             }
@@ -343,9 +285,7 @@ AnnotationStages.prototype = {
 
             // Remove the highlated label and disable.
             $('.annotation_tag', this.dom).removeClass('selected');
-            $('.proximity_tag', this.dom).removeClass('selected');
             $('.annotation_tag', this.dom).addClass('disabled');
-            $('.proximity_tag', this.dom).addClass('disabled');
         }
 
         // If the user is switch to stage 3, enable drag and resize editing for the new current region. 
@@ -376,9 +316,7 @@ AnnotationStages.prototype = {
 
                 // Remove the highlated label and disable.
                 $('.annotation_tag', this.dom).removeClass('selected');
-                $('.proximity_tag', this.dom).removeClass('selected');
                 $('.annotation_tag', this.dom).addClass('disabled');
-                $('.proximity_tag', this.dom).addClass('disabled');
             }
         }
     },
@@ -450,7 +388,6 @@ AnnotationStages.prototype = {
     clear: function() {
         this.currentStage = 0;
         this.currentRegion = null;
-        this.usingProximity = false;
         this.annotationSolutions = [];
         this.city = '';
         this.previousF1Score = 0;
@@ -460,24 +397,20 @@ AnnotationStages.prototype = {
         this.alwaysShowTags = false;
     },
 
-    // Reset field values and update the proximity tags, annotation tages and annotation solutions
-    reset: function(proximityTags, annotationTags, solution, alwaysShowTags) {
+    // Reset field values and update the annotation tages and annotation solutions
+    reset: function(annotationTags, solution, alwaysShowTags) {
         this.clear();
         // Update all Tags' Contents
         this.alwaysShowTags = alwaysShowTags || false;
-        this.updateContentsTags(proximityTags, annotationTags);
-        this.usingProximity = proximityTags.length > 0;
+        this.updateContentsTags(annotationTags);
         // Update solution set
         this.annotationSolutions = solution.annotations || [];
         this.city = solution.city || '';
     },
 
-    // Update stage 3 dom with new proximity tags and annotation tags
-    updateContentsTags: function(proximityTags, annotationTags) {
-        this.stageThreeView.updateTagContents(
-            proximityTags,
-            annotationTags
-        );
+    // Update stage 3 dom with new annotation tags
+    updateContentsTags: function(annotationTags) {
+        this.stageThreeView.updateTagContents(annotationTags);
     },
 
     // Event Handler: For online creation mode, in stage 2 the current region's size grows as the audio plays
@@ -588,14 +521,10 @@ AnnotationStages.prototype = {
     // Event handler: called when a region's tags are added or changed
     updateRegion: function(event, data) {
         var annotationEventType = null;
-        var proximityEventType = null;
 
         // Determine if the tags where added for the first time or just changed
         if (data.annotation && data.annotation !== this.currentRegion.annotation) {
             annotationEventType = this.currentRegion.annotation ? 'change' : 'add';
-        }
-        if (data.proximity && data.proximity !== this.currentRegion.proximity) {
-            proximityEventType = this.currentRegion.proximity ? 'change' : 'add';
         }
 
         // Update the current region with the tag data
@@ -611,16 +540,9 @@ AnnotationStages.prototype = {
                 this.currentRegion.annotation
             );
         }
-        if (proximityEventType) {
-            this.trackEvent(
-                proximityEventType + '-proximity-label',
-                this.currentRegion.id,
-                this.currentRegion.proximity
-            );
-        }
 
         // If the region has all its required tags, deselect the region and go back to stage 1
-        if (this.currentRegion.annotation && (!this.usingProximity || this.currentRegion.proximity)) {
+        if (this.currentRegion.annotation) {
             this.updateStage(1);
         }
     },

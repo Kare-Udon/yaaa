@@ -184,15 +184,15 @@ Annotator.prototype = {
             var content = {
                 task_start_time: this.taskStartTime,
                 task_end_time: new Date().getTime(),
-                visualization: this.wavesurfer.params.visualization,
+                // visualization: this.wavesurfer.params.visualization,
                 annotations: this.stages.getAnnotations(),
-                deleted_annotations: this.stages.getDeletedAnnotations(),
+                // deleted_annotations: this.stages.getDeletedAnnotations(),
                 // List of the different types of actions they took to create the annotations
-                annotation_events: this.stages.getEvents(),
+                // annotation_events: this.stages.getEvents(),
                 // List of actions the user took to play and pause the audio
-                play_events: this.playBar.getEvents(),
+                // play_events: this.playBar.getEvents(),
                 // Boolean, if at the end, the user was shown what city the clip was recorded in
-                final_solution_shown: this.stages.aboveThreshold()
+                // final_solution_shown: this.stages.aboveThreshold()
             };
 
             if (this.stages.aboveThreshold()) {

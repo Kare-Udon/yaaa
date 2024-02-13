@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/static/css/materialize.min.css">
     <link rel="stylesheet" type="text/css" href="/static/css/audio-annotator.css">
 
-    <script type="text/javascript" src="/static/js/lib/jquery-2.2.3.min.js"></script>
+    <script type="text/javascript" src="/static/js/lib/jquery-3.7.1.min.js"></script>
     <script type="text/javascript" src="/static/js/lib/materialize.min.js"></script>
     <script type="text/javascript" src="/static/js/lib/wavesurfer.min.js"></script>
     <script type="text/javascript" src="/static/js/lib/wavesurfer.spectrogram.min.js"></script>
@@ -39,8 +39,8 @@
         <div class="submit_container"></div>
     </div>
     <script>
-        var dataUrl = '/static/json/sample_data.json';
-        var postUrl = '/<post_url>'; // This is where data posts to
+        var dataUrl = 'http://127.0.0.1:8000/audio';
+        var postUrl = 'http://127.0.0.1:8000/annotation'; // This is where data posts to
     </script>
 </body>
 </html>

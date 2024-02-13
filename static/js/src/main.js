@@ -14,6 +14,7 @@
  *    
  */
 function Annotator() {
+    this.id;
     this.wavesurfer;
     this.playBar;
     this.stages;
@@ -164,8 +165,17 @@ Annotator.prototype = {
     // Update the interface with the next task's data
     loadNextTask: function() {
         var my = this;
-        $.getJSON(dataUrl)
+        $.ajax({
+            type: 'GET',
+            dataType: "json",
+            crossDomain: true,
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            },
+            url: dataUrl,
+        })
         .done(function(data) {
+            my.id = data.id;
             my.currentTask = data.task;
             my.update();
         });
@@ -182,6 +192,7 @@ Annotator.prototype = {
             this.sendingResponse = true;
             // Get data about the annotations the user has created
             var content = {
+                id: this.id,
                 task_start_time: this.taskStartTime,
                 task_end_time: new Date().getTime(),
                 // visualization: this.wavesurfer.params.visualization,
@@ -214,8 +225,13 @@ Annotator.prototype = {
         var my = this;
         $.ajax({
             type: 'POST',
-            url: $.getJSON(postUrl),
+            // url: $.getJSON(postUrl),
+            crossDomain: true,
+            url: postUrl,
             contentType: 'application/json',
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            },
             data: JSON.stringify(content)
         })
         .done(function(data) {

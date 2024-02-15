@@ -143,7 +143,7 @@ Annotator.prototype = {
             // Update the visualization type and the feedback type and load in the new audio clip
             my.wavesurfer.params.visualization = my.currentTask.visualization; // invisible, spectrogram, waveform
             my.wavesurfer.params.feedback = my.currentTask.feedback; // hiddenImage, silent, notify, none 
-            my.wavesurfer.load(my.currentTask.url);
+            my.wavesurfer.load(backendUrl + '/file' + '?id=' + my.id);
         };
 
         if (this.currentTask.feedback !== 'none') {
@@ -172,7 +172,7 @@ Annotator.prototype = {
             headers: {
                 "Access-Control-Allow-Origin": "*"
             },
-            url: dataUrl,
+            url: backendUrl + '/audio' + "?id=1",
         })
         .done(function(data) {
             my.id = data.id;
@@ -225,9 +225,8 @@ Annotator.prototype = {
         var my = this;
         $.ajax({
             type: 'POST',
-            // url: $.getJSON(postUrl),
             crossDomain: true,
-            url: postUrl,
+            url: backendUrl + '/annotation',
             contentType: 'application/json',
             headers: {
                 "Access-Control-Allow-Origin": "*"

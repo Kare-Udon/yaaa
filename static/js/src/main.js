@@ -178,6 +178,10 @@ Annotator.prototype = {
             my.id = data.id;
             my.currentTask = data.task;
             my.update();
+        })
+        .fail(function() {
+            alert('Error: no more tasks available, maybe all finished!');
+            
         });
     },
 

@@ -14,7 +14,7 @@
  *    
  */
 function Annotator() {
-    this.id;
+    this.id = 0;
     this.wavesurfer;
     this.playBar;
     this.stages;
@@ -172,7 +172,7 @@ Annotator.prototype = {
             headers: {
                 "Access-Control-Allow-Origin": "*"
             },
-            url: backendUrl + '/audio' + "?id=1",
+            url: backendUrl + '/audio' + "?id=" + (this.id + 1),
         })
         .done(function(data) {
             my.id = data.id;

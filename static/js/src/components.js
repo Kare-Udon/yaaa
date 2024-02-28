@@ -173,11 +173,14 @@ function WorkflowBtns(exitUrl) {
     this.nextBtn = null;
     // Dom of exit task btn
     this.exitBtn = null;
+    // Dom of skip task btn
+    this.skipBtn = null;
     // The url the user will be directed to when they exit
     this.exitUrl = exitUrl;
-
     // Boolean that determined if the exit button is shown
     this.showExitBtn = false;
+    // Boolean that determined if the skip button is shown
+    this.showSkipBtn = true;
 }
 
 WorkflowBtns.prototype = {
@@ -192,6 +195,14 @@ WorkflowBtns.prototype = {
             $(my).trigger('submit-annotations');
         });
 
+        this.skipBtn = $('<button>', {
+            class: 'btn skip',
+            text: 'SKIP THIS AUDIO'
+        });
+        this.skipBtn.click(function () {
+            $(my).trigger('load-next-task');
+        });
+
         this.exitBtn = $('<button>', {
             text: 'Exit Now',
             class: 'exit btn',
@@ -204,6 +215,9 @@ WorkflowBtns.prototype = {
     // Append the next and exit elements to the the parent container
     update: function() {
         $('.submit_container').append(this.nextBtn);
+        if (this.showSkipBtn) {
+            $('.submit_container').append(this.skipBtn);
+        }
         if (this.showExitBtn) {
             $('.submit_container').append(this.exitBtn);
         }

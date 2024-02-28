@@ -121,6 +121,7 @@ Annotator.prototype = {
     // Event Handler, if the user clicks submit annotations call submitAnnotations
     addWorkflowBtnEvents: function () {
         $(this.workflowBtns).on('submit-annotations', this.submitAnnotations.bind(this));
+        $(this.workflowBtns).on('load-next-task', this.loadNextTask.bind(this));
     },
 
     addEvents: function () {

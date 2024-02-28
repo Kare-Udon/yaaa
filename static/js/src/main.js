@@ -76,8 +76,13 @@ function Annotator() {
     this.addEvents();
 }
 
+function insert_title(id) {
+    var title = "<h5>ID: " + id + "</h5>";
+    $('.title').html(title);
+}
+
 Annotator.prototype = {
-    addWaveSurferEvents: function() {
+    addWaveSurferEvents: function () {
         var my = this;
 
         // function that moves the vertical progress bar to the current time in the audio clip
@@ -89,7 +94,7 @@ Annotator.prototype = {
         // Update vertical progress bar to the currentTime when the sound clip is 
         // finished or paused since it is only updated on audioprocess
         this.wavesurfer.on('pause', updateProgressBar);
-        this.wavesurfer.on('finish', updateProgressBar);    
+        this.wavesurfer.on('finish', updateProgressBar);
 
         // When a new sound file is loaded into the wavesurfer update the  play bar, update the 
         // annotation stages back to stage 1, update when the user started the task, update the workflow buttons.
@@ -109,24 +114,24 @@ Annotator.prototype = {
         });
     },
 
-    updateTaskTime: function() {
+    updateTaskTime: function () {
         this.taskStartTime = new Date().getTime();
     },
 
     // Event Handler, if the user clicks submit annotations call submitAnnotations
-    addWorkflowBtnEvents: function() {
+    addWorkflowBtnEvents: function () {
         $(this.workflowBtns).on('submit-annotations', this.submitAnnotations.bind(this));
     },
 
-    addEvents: function() {
+    addEvents: function () {
         this.addWaveSurferEvents();
         this.addWorkflowBtnEvents();
     },
 
     // Update the task specific data of the interfaces components
-    update: function() {
+    update: function () {
         var my = this;
-        var mainUpdate = function(annotationSolutions) {
+        var mainUpdate = function (annotationSolutions) {
 
             // Update the different tags the user can use to annotate, also update the solutions to the
             var annotationGroup = my.currentTask.annotationGroup;
@@ -150,12 +155,12 @@ Annotator.prototype = {
             // If the current task gives the user feedback, load the tasks solutions and then update
             // interface components
             $.getJSON(this.currentTask.annotationSolutionsUrl)
-            .done(function(data) {
-                mainUpdate(data);
-            })
-            .fail(function() {
-                alert('Error: Unable to retrieve annotation solution set');
-            });
+                .done(function (data) {
+                    mainUpdate(data);
+                })
+                .fail(function () {
+                    alert('Error: Unable to retrieve annotation solution set');
+                });
         } else {
             // If not, there is no need to make an additional request. Just update task specific data right away
             mainUpdate({});
@@ -163,7 +168,7 @@ Annotator.prototype = {
     },
 
     // Update the interface with the next task's data
-    loadNextTask: function() {
+    loadNextTask: function () {
         var my = this;
         $.ajax({
             type: 'GET',
@@ -174,19 +179,22 @@ Annotator.prototype = {
             },
             url: backendUrl + '/audio' + "?id=" + (this.id + 1),
         })
-        .done(function(data) {
-            my.id = data.id;
-            my.currentTask = data.task;
-            my.update();
-        })
-        .fail(function() {
-            alert('Error: no more tasks available, maybe all finished!');
-            
-        });
+            .done(function (data) {
+                my.id = data.id;
+                my.currentTask = data.task;
+                my.update();
+                insert_title(data.id);
+            })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+                if (jqXHR.status == 400)
+                    alert('Error: no more tasks available, maybe all finished!');
+                else
+                    alert('Error: Unable to retrieve next task');
+            });
     },
 
     // Collect data about users annotations and submit it to the backend
-    submitAnnotations: function() {
+    submitAnnotations: function () {
         // Check if all the regions have been labeled before submitting
         if (this.stages.annotationDataValidationCheck()) {
             if (this.sendingResponse) {
@@ -215,7 +223,7 @@ Annotator.prototype = {
                 // display the city the clip was recorded for 2 seconds and then submit their work
                 var my = this;
                 this.stages.displaySolution();
-                setTimeout(function() {
+                setTimeout(function () {
                     my.post(content);
                 }, 2000);
             } else {
@@ -237,22 +245,21 @@ Annotator.prototype = {
             },
             data: JSON.stringify(content)
         })
-        .done(function(data) {
-            // If the last task had a hiddenImage component, remove it
-            if (my.currentTask.feedback === 'hiddenImage') {
-                my.hiddenImage.remove();
-            }
-            my.loadNextTask();
-        })
-        .fail(function() {
-            alert('Error: Unable to Submit Annotations');
-        })
-        .always(function() {
-            // No longer sending response
-            my.sendingResponse = false;
-        });
+            .done(function (data) {
+                // If the last task had a hiddenImage component, remove it
+                if (my.currentTask.feedback === 'hiddenImage') {
+                    my.hiddenImage.remove();
+                }
+                my.loadNextTask();
+            })
+            .fail(function () {
+                alert('Error: Unable to Submit Annotations');
+            })
+            .always(function () {
+                // No longer sending response
+                my.sendingResponse = false;
+            });
     }
-
 };
 
 function main() {

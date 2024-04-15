@@ -175,12 +175,16 @@ function WorkflowBtns(exitUrl) {
     this.exitBtn = null;
     // Dom of skip task btn
     this.skipBtn = null;
+    // Dom of remove task btn
+    this.rmBtn = null;
     // The url the user will be directed to when they exit
     this.exitUrl = exitUrl;
     // Boolean that determined if the exit button is shown
     this.showExitBtn = false;
     // Boolean that determined if the skip button is shown
     this.showSkipBtn = true;
+    // Boolean that determined if the remove button is shown
+    this.showRmBtn = true;
 }
 
 WorkflowBtns.prototype = {
@@ -189,7 +193,7 @@ WorkflowBtns.prototype = {
         var my = this;
         this.nextBtn = $('<button>', {
             class: 'btn submit',
-            text: 'SUBMIT & LOAD NEXT RECORDING'
+            text: 'SUBMIT & LOAD NEXT'
         });
         this.nextBtn.click(function () {
             $(my).trigger('submit-annotations');
@@ -201,6 +205,14 @@ WorkflowBtns.prototype = {
         });
         this.skipBtn.click(function () {
             $(my).trigger('load-next-task');
+        });
+
+        this.rmBtn = $('<button>', {
+            class: 'btn skip',
+            text: 'REMOVE THIS AUDIO'
+        });
+        this.rmBtn.click(function () {
+            $(my).trigger('remove-task');
         });
 
         this.exitBtn = $('<button>', {
@@ -217,6 +229,9 @@ WorkflowBtns.prototype = {
         $('.submit_container').append(this.nextBtn);
         if (this.showSkipBtn) {
             $('.submit_container').append(this.skipBtn);
+        }
+        if (this.showRmBtn) {
+            $('.submit_container').append(this.rmBtn);
         }
         if (this.showExitBtn) {
             $('.submit_container').append(this.exitBtn);

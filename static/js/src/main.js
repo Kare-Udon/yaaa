@@ -122,6 +122,7 @@ Annotator.prototype = {
     addWorkflowBtnEvents: function () {
         $(this.workflowBtns).on('submit-annotations', this.submitAnnotations.bind(this));
         $(this.workflowBtns).on('load-next-task', this.loadNextTask.bind(this));
+        $(this.workflowBtns).on('remove-task', this.removeAnnotation.bind(this));
     },
 
     addEvents: function () {
@@ -225,16 +226,21 @@ Annotator.prototype = {
                 var my = this;
                 this.stages.displaySolution();
                 setTimeout(function () {
-                    my.post(content);
+                    my.submit_anno_post(content);
                 }, 2000);
             } else {
-                this.post(content);
+                this.submit_anno_post(content);
             }
         }
     },
 
+    removeAnnotation: function () {
+        this.remove_audio_post();
+        this.loadNextTask();
+    },
+
     // Make POST request, passing back the content data. On success load in the next task
-    post: function (content) {
+    submit_anno_post: function (content) {
         var my = this;
         $.ajax({
             type: 'POST',
@@ -260,6 +266,20 @@ Annotator.prototype = {
                 // No longer sending response
                 my.sendingResponse = false;
             });
+    },
+
+    remove_audio_post: function () {
+        $.ajax({
+            type: 'DELETE',
+            crossDomain: true,
+            url: backendUrl + '/audio?id=' + this.id,
+            headers: {
+                "Access-Control-Allow-Origin": "*"
+            },
+        })
+            .fail(function () {
+                alert('Error: Unable to Delete Audio');
+            })
     }
 };
 
